@@ -2,66 +2,55 @@
 
 ## 1. Model Name  
 
-Give your model a short, descriptive name.  
-Example: **VibeFinder 1.0**  
+**VibeMatch 1.0**
 
 ---
 
 ## 2. Intended Use  
 
-Describe what your recommender is designed to do and who it is for. 
+**Goal:** VibeMatch suggests the top five songs from a small catalog that best match a listener's taste. The listener states a favorite genre, a favorite mood, how energetic they want the music to be, and optionally how happy it should sound and whether they like acoustic songs. Each suggestion comes with the reasons it was picked.
 
-Prompts:  
+**Intended use:** This is a classroom project for learning how a content-based recommender turns data into suggestions. It assumes the listener knows what they want and can describe it with one genre and one mood. It is meant for exploring how scoring choices change the results.
 
-- What kind of recommendations does it generate  
-- What assumptions does it make about the user  
-- Is this for real users or classroom exploration  
+**Not intended for:** It should not be used to recommend music to real users. It only knows 19 made up songs, it does not learn from what people actually play or skip, and its labels reflect one person's reading of each song. It should also not be used to judge or sort people by their taste.
 
 ---
 
 ## 3. How the Model Works  
 
-Explain your scoring approach in simple language.  
+VibeMatch works like a judge that gives each song points for what it has in common with you. A song gets 2 points if its genre matches yours and 1 point if its mood matches yours. It then gets up to 1.5 points for how close its energy is to the energy you want. A song that is right on target gets the full amount, and one that is far off gets close to nothing. If you give a happiness target, it adds up to 1 more point the same way. If you say whether you like acoustic music, it adds up to half a point for songs that fit. The best possible score is 6 points.
 
-Prompts:  
+After every song has a score, VibeMatch sorts them from highest to lowest and shows you the top five. If two songs tie, the one listed first in the catalog wins. Each song also shows a list of the points it earned, so you can see exactly why it ranked where it did.
 
-- What features of each song are used (genre, energy, mood, etc.)  
-- What user preferences are considered  
-- How does the model turn those into a score  
-- What changes did you make from the starter logic  
-
-Avoid code here. Pretend you are explaining the idea to a friend who does not program.
+The starter code just returned the first few songs in the file. I added the scoring, the sorting, the happiness and acoustic checks, and the list of reasons.
 
 ---
 
 ## 4. Data  
 
-Describe the dataset the model uses.  
+The catalog has 19 songs. The starter came with 10, and I added 9 more to cover genres and moods that were missing. There are now 16 genres, including pop, lofi, rock, metal, classical, hip hop, r&b, edm, reggae, folk, and country. There are 14 moods, such as happy, chill, intense, sad, angry, romantic, and nostalgic.
 
-Prompts:  
+Each song has a genre, a mood, and five number features, which are energy, tempo, valence, danceability, and acousticness. VibeMatch only scores energy, valence, and acousticness. Tempo and danceability rise and fall with energy in this catalog, so scoring them would count the same thing twice.
 
-- How many songs are in the catalog  
-- What genres or moods are represented  
-- Did you add or remove data  
-- Are there parts of musical taste missing in the dataset  
+The data has some clear limits. Most genres only have one song, and only 3 songs sit in the middle of the energy range. The numbers for the songs I added were picked by hand, not measured from real audio. The data also leaves out a lot of what makes up musical taste, like lyrics, language, the era a song is from, and whether it has vocals.
 
 ---
 
 ## 5. Strengths  
 
-Where does your system seem to work well  
+VibeMatch works best for listeners with a clear and common taste. The Chill Lofi, High-Energy Pop, and Deep Intense Rock profiles all got the song I would have picked first at the top of their lists. For Chill Lofi, the whole top five matched my own sense of what fits that vibe.
 
-Prompts:  
+The valence check also does its job past the genre and mood labels. The pop and rock listeners both want high energy, but the pop list fills in with happier songs and the rock list fills in with darker ones.
 
-- User types for which it gives reasonable results  
-- Any patterns you think your scoring captures correctly  
-- Cases where the recommendations matched your intuition  
+The explanations are another strength. Every song shows the points it earned, and they always add up to its score. This made it easy to see why a song like Gym Hero ranked where it did.
 
 ---
 
 ## 6. Limitations and Bias 
 
 The biggest weakness I found is that the system leans heavily on exact genre labels, which creates a filter bubble that hits some listeners harder than others. A genre match is worth 2.0 points, but 14 of the 16 genres in the catalog only have a single song, so a rock fan gets one strong match and then drops straight from a score of 5.85 to 3.56 for everything after it. A lofi fan, as opposed to that, gets three lofi songs at the top since lofi happens to be the best covered genre in the data. The exact match also means close genres get no credit at all, which is why Gym Hero, a pop workout song, ranked above the happy indie pop song Rooftop Lights for a happy pop listener. In my weight shift experiment, halving genre fixed that ordering, but it let energy take over and pushed a cheerful EDM song into the rock list, so the bias moved somewhere else instead of going away.
+
+I also found a few smaller issues. The matching is case sensitive, so a listener who types "Pop" instead of "pop" loses every genre and mood point. Listeners who want medium energy are served worse, as only 3 songs fall in the middle of the energy range. An energy target above 1.0 is not rejected, and it can give songs negative points.
 
 ---
 
@@ -416,23 +405,18 @@ Top recommendations
 
 ## 8. Future Work  
 
-Ideas for how you would improve the model next.  
-
-Prompts:  
-
-- Additional features or preferences  
-- Better ways to explain recommendations  
-- Improving diversity among the top results  
-- Handling more complex user tastes  
+1. **Give partial credit for related labels.** Metal should earn some points for a rock fan, and relaxed or focused songs should earn some points for a chill listener. This would soften the genre filter bubble without letting energy take over the way it did in my weight shift experiment.
+2. **Clean up the input before scoring.** Lowercasing the genre and mood would fix the capitalization problem, and keeping energy and valence targets between 0 and 1 would stop songs from getting negative points.
+3. **Add variety to the top five.** A simple rule like allowing only one song per artist, or making sure the list is not all one genre, would help listeners discover new music. Adding more songs to the catalog, especially in the genres with only one song and in the middle of the energy range, would help as well.
 
 ---
 
 ## 9. Personal Reflection  
 
-A few sentences about your experience.  
+My biggest learning moment was the weight shift experiment. I went in thinking that lowering the genre weight would fix the Gym Hero problem, and it did for the pop listener, but it also let energy take over and pushed a cheerful EDM song into the rock list. That showed me that changing a weight can move a bias somewhere else without actually removing it. I also learned how much of the work the genre and mood labels were doing. When none of the labels matched, every song in the top five landed within a few tenths of a point of each other, so the number features alone could barely tell songs apart.
 
-Prompts:  
+Using an AI assistant helped a lot with the parts that would have been slow to do by hand. It ran the correlations on the dataset, scored every song for each profile, came up with the edge case profiles, and caught the capitalization and out of range energy problems by testing them. I worked through the project one step at a time and made the decisions myself, like the weights, the main profile, and whether to keep the experiment. I still needed to double check it at times. It told me the max score would stay at 6.0 during the weight shift when it was actually 6.5, it first said Gym Hero showed up in four lists when it was five, and some of the correlation numbers it wrote in the README went out of date once I added more songs. None of these were big issues, but they showed me that its numbers needed to be checked against the actual output before going into my write-up.
 
-- What you learned about recommender systems  
-- Something unexpected or interesting you discovered  
-- How this changed the way you think about music recommendation apps  
+What surprised me most was how real the results felt for such a simple set of rules. The scoring is just a few additions, yet the Chill Lofi list matched what I would have picked myself, and having the reasons printed under each song made it feel like the app understood my taste. In hindsight that is also what makes it a bit misleading, as Gym Hero looked like a reasonable pick for a happy pop fan until I looked at the points and saw it was mostly getting there on its genre label.
+
+If I kept working on this, I would first give partial credit for related genres and moods so a rock fan gets some points for metal. After that I would like to try adding listening behavior, like plays and skips from several made up users, so I can compare a content based approach with collaborative filtering and see whether mixing the two helps with the filter bubble.
