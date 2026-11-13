@@ -2,16 +2,7 @@
 
 ## Project Summary
 
-In this project you will build and explain a small music recommender system.
-
-Your goal is to:
-
-- Represent songs and a user "taste profile" as data
-- Design a scoring rule that turns that data into recommendations
-- Evaluate what your system gets right and wrong
-- Reflect on how this mirrors real world AI recommenders
-
-Replace this paragraph with your own summary of what your version does.
+My version is called **VibeMatch 1.0**. It is a small content-based music recommender that runs from the command line. It reads a catalog of 19 songs from `data/songs.csv`, compares each song to a listener's taste profile, and prints the top five matches along with the points each song earned and why. A song earns points for matching the listener's favorite genre and mood, and for how close its energy, valence, and acousticness are to what the listener wants. I tested it with eight profiles, including a few edge cases meant to break it, and documented what it gets right, where it shows bias, and what I would change in the [model card](model_card.md).
 
 ---
 
@@ -179,25 +170,17 @@ Top recommendations
 
 ## Experiments You Tried
 
-Use this section to document the experiments you ran. For example:
+**Weight shift.** I halved the genre weight from 2.0 to 1.0 and doubled the energy weight from 1.5 to 3.0. For the starter pop and happy listener, this moved the happy indie pop song Rooftop Lights above Gym Hero, which I think is more accurate. However, it also pushed the cheerful EDM song Pulse Theory into the rock listener's top five just because its energy was high, and the sad folk listener's top pick changed from the folk song Empty Platform to the high energy synthpop song Neon Heartbreak. The change made some lists better and some worse, so I put the weights back to the original recipe.
 
-- What happened when you changed the weight on genre from 2.0 to 0.5
-- What happened when you added tempo or valence to the score
-- How did your system behave for different types of users
+**Adding valence.** The starter recipe only used genre, mood, and energy, and I added valence as a target in the profile. Comparing the starter pop profile with my High-Energy Pop profile, adding valence swapped the sad song Neon Heartbreak out of fourth place for the happy song Pulse Theory. It also helped the pop and rock listeners get different results past their top picks, even though both want high energy. The pop list fills in with happier songs and the rock list fills in with darker ones.
+
+**Different types of users.** I ran three standard listeners, which were High-Energy Pop, Chill Lofi, and Deep Intense Rock, along with four edge cases. The standard listeners each got the song I expected at the top, and the Chill Lofi list matched my own intuition. The edge cases showed that the matching is case sensitive, that an energy target above 1.0 can give songs negative points, and that the scores bunch up within a few tenths of a point when no genre or mood matches. The full output for every profile is in the model card.
 
 ---
 
 ## Limitations and Risks
 
-Summarize some limitations of your recommender.
-
-Examples:
-
-- It only works on a tiny catalog
-- It does not understand lyrics or language
-- It might over favor one genre or mood
-
-You will go deeper on this in your model card.
+The catalog is tiny, with only 19 songs, and 14 of its 16 genres have just one song. Because genre matches are worth the most points and only count on an exact match, listeners of those genres get one strong match and then a big drop, while lofi and pop fans get more choices. Close genres like rock and metal get no credit for each other, which is why a pop workout song keeps showing up for happy pop fans. The system also does not understand lyrics, language, or the era of a song, and it does not learn from what people actually play or skip. The song values I added were picked by hand, so the results reflect my own reading of each song. I go into more detail on these in the [model card](model_card.md).
 
 ---
 
@@ -207,10 +190,9 @@ Read and complete `model_card.md`:
 
 [**Model Card**](model_card.md)
 
-Write 1 to 2 paragraphs here about what you learned:
+This project showed me that a recommendation is really just a ranking. Each song gets turned into a few numbers and labels, the user's taste gets turned into targets for those same things, and a scoring rule decides how close each song is to those targets. Once every song has a score, sorting the list is all it takes to produce something that feels like a personal suggestion. I was surprised by how much the choice of weights mattered. The same data and the same listener could get a noticeably different top five just from moving a point or two between genre and energy.
 
-- about how recommenders turn data into predictions
-- about where bias or unfairness could show up in systems like this
+I also learned that bias can show up without anyone meaning to put it there. In my system it came from two places, which were the weights I chose and the gaps in the catalog. Listeners whose genre had more songs got better results, and listeners in the middle of the energy range had very few songs that suited them. In a real app with millions of users, the same kind of gap could mean some groups of listeners keep getting pushed toward the same popular music, while others rarely get suggestions that fit them at all.
 
 
 
